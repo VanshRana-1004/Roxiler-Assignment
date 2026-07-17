@@ -11,3 +11,59 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum Role{
+  ADMIN
+  USER
+  OWNER
+}
+
+enum Status{
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User{
+  id          String @id @default(uuid())
+  name        String
+  email       String @unique
+  password    String
+  address     String
+  role        Role 
+  store       Store?
+}
+
+model Store{
+  id          String @id @default(cuid())
+  name        String
+  address     String
+  email       String @unique
+  status      Status
+
+  ownerId     String @unique
+  owner       User @relation(fields: [ownerId], references: [id]) 
+
+  ratings     Rating[]
+}
+
+model Rating{
+  id          String @id @default(cuid())
+  rating      Int
+  userId      String @unique
+  storeId     String @unique
+
+  store       Store @relation(fields: [storeId], references: [id])
+}
+
+model StoreRequest{
+  id         String @id @default(cuid())
+  ownerName  String
+  ownerEmail String
+
+  storeName  String
+  storeEmail String
+  address    String
+
+  status     Status
+}
