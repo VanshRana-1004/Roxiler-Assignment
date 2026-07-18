@@ -55,15 +55,3 @@ model Rating{
 
   store       Store @relation(fields: [storeId], references: [id])
 }
-
-model StoreRequest{
-  id         String @id @default(cuid())
-  ownerName  String
-  ownerEmail String
-
-  storeName  String
-  storeEmail String
-  address    String
-
-  status     Status
-}
