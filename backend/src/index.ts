@@ -42,7 +42,7 @@ app.post("/signup", async (req, res) => {
                 email,
                 password: hashedPassword,
                 address,
-                role: "ADMIN" 
+                role: "USER" 
             }
         });
 
@@ -85,8 +85,9 @@ app.post("/login", async (req, res) => {
 
         const userId=user.id;
         const role=user.role;
+        
         const token=jwt.sign({
-            userId,role
+            userId,role,email
         },jwtSecret as string);
 
         return res.status(201).json({
