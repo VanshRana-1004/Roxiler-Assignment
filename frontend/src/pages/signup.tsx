@@ -63,25 +63,36 @@ export function Signup(){
         }
 
         setError("");
+        try{
+            const response = await api.post("/signup",{
+                name,
+                email,
+                address,
+                password
+            });
 
-        const response = await api.post("/signup",{
-            name,
-            email,
-            address,
-            password
-        });
+            alert('User Signed up successfully')
+            navigate('/login');
 
-        console.log(response);
-
-        navigate('/login');
+        }catch(e : any){
+            if(e.response?.status==409){
+                alert('User already exists');
+                return;
+            }
+            else if(e.response?.status==500){
+                alert('Internal Server Error')
+                return;
+            }
+        }
+        
 
     }
 
     return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8">
-        <h1 className="text-3xl font-bold text-center mb-6">
-            Create Account
+        <h1 className="text-xl font-bold text-center mb-6">
+            Create Account for rating stores only.
         </h1>
 
         {error && (

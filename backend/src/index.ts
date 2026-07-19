@@ -5,12 +5,17 @@ import { middleware } from "./middleware.js";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 import { generatePassword } from "./utils/password.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const jwtSecret=process.env.JWT_SECRET as string;
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin : "http://localhost:5173",
+    credentials : true
+}));
 
 const prisma = new PrismaClient();
 
@@ -27,10 +32,6 @@ app.post("/signup", async (req, res) => {
     try {
         
         const { name, email, password, address } = req.body;
-        console.log(name);
-        console.log(email);
-        console.log(password);
-        console.log(address);
 
         const hashedPassword = await bcrypt.hash(password, 5);
 
@@ -52,7 +53,7 @@ app.post("/signup", async (req, res) => {
                 email,
                 password: hashedPassword,
                 address,
-                role: "USER" 
+                role: "ADMIN" 
             }
         });
 
@@ -93,15 +94,19 @@ app.post("/login", async (req, res) => {
             })
         }
 
+        const address=user.address;
         const userId=user.id;
         const role=user.role;
 
+        // console.log(jwtSecret);
         const token=jwt.sign({
             userId,role,email
         },jwtSecret as string);
 
-        return res.status(201).json({
+        return res.status(200).json({
             role,
+            userId,
+            address,
             token : token,
             message : "Signed in successfully."
         })
@@ -124,7 +129,7 @@ app.post('/create-user', middleware, async (req, res)=>{
     try{
         
         if(req.role!="ADMIN"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }
@@ -155,10 +160,22 @@ app.post('/create-user', middleware, async (req, res)=>{
                 role: role
             }
         });
+        
+        // console.log(password);
 
+        if(password==undefined){
+            return res.status(500).json({message:"unable to create password"})
+        }
         return res.status(201).json({
-            message: "User created successfully",
-            user
+            message: "User created successfully.",
+            generatedPassword: password,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                address: user.address
+            }
         });
 
     }catch(err){
@@ -173,7 +190,7 @@ app.post('/create-store', middleware, async (req, res)=>{
     try{
 
         if(req.role!="ADMIN"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }
@@ -217,7 +234,7 @@ app.post('/create-store', middleware, async (req, res)=>{
 app.get('/all-users', middleware, async (req, res) =>{
     try {
         if(req.role!="ADMIN"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }
@@ -276,7 +293,7 @@ app.get('/all-users', middleware, async (req, res) =>{
 app.get("/all-ratings", middleware, async (req, res) => {
     try {
         if(req.role!="ADMIN"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }
@@ -288,6 +305,7 @@ app.get("/all-ratings", middleware, async (req, res) => {
                         id: true,
                         name: true,
                         email: true,
+                        address: true
                     },
                 },
                 store: {
@@ -295,6 +313,7 @@ app.get("/all-ratings", middleware, async (req, res) => {
                         id: true,
                         name: true,
                         email: true,
+                        address : true
                     },
                 },
             },
@@ -318,7 +337,7 @@ app.get("/all-ratings", middleware, async (req, res) => {
 app.post('/rate-store', middleware, async (req, res) =>{
     try{
         if(req.role!="USER"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }
@@ -375,14 +394,14 @@ app.get('/user-ratings', middleware, async (req, res) =>{
     try{
 
         if(req.role!="USER"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }
 
         const id=req.userId;
         if(id==undefined){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : "not valid userId"
             })
         }
@@ -393,18 +412,36 @@ app.get('/user-ratings', middleware, async (req, res) =>{
             },
             include : {
                 store :{
-                    select :{
-                        id : true,
-                        name : true,
-                        email : true
+                    include : {
+                        ratings : {
+                            select : {
+                                rating : true
+                            }
+                        }
                     }
                 }
             }
         })
 
-        return res.status(200).json({
-            ratings : result
+        const data = result.map((item) =>{
+            const ratings = item.store.ratings;
+            const avg = ratings.reduce((sum,r)=> sum + r.rating,0)/ratings.length;
+            return {
+                myRating : item.rating,
+                avgRating : Number(avg.toFixed(2)),
+                store :{
+                    id : item.store.id,
+                    name : item.store.name,
+                    email : item.store.email,
+                    address : item.store.address
+                }
+            }
         })
+
+        return res.status(200).json({
+            ratings : data
+        })
+
     }catch(err){
         console.error(err);
         return res.status(500).json({
@@ -419,14 +456,14 @@ app.get('/user-ratings', middleware, async (req, res) =>{
 app.get('/store-ratings', middleware, async (req, res) =>{
     try{
         if(req.role!="OWNER"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }
 
         const userId=req.userId;
         if(userId==undefined){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : "not valid userId"
             })
         }
@@ -438,15 +475,22 @@ app.get('/store-ratings', middleware, async (req, res) =>{
             include : {
                 ratings :{
                     select :{
-                        userId : true,
-                        rating : true
+                        rating : true,
+                        user : {
+                            select : {
+                                id : true,
+                                name : true,
+                                email : true,
+                                address : true
+                            }
+                        }
                     }
                 }
             }
         })
 
         return res.status(200).json({
-            ratings : result
+            ratings : result?.ratings ?? []
         })
 
     }catch(err){
@@ -461,13 +505,14 @@ app.get('/store-ratings', middleware, async (req, res) =>{
 
 // all users can update their passwords
 
-app.put('/update-password', middleware, async (req, res) =>{
+app.post('/update-password', middleware, async (req, res) =>{
     try{
         const { password}=req.body;
         const userId = req.userId;
+        // console.log(userId);
         if(userId==undefined){
-            return res.status(4).json({
-                message : "userId underfined"
+            return res.status(404).json({
+                message : "userId undefined"
             })
         }
         const exists=await prisma.user.findUnique({
@@ -506,7 +551,7 @@ app.put('/update-password', middleware, async (req, res) =>{
 app.get('/all-stores', middleware, async (req, res) =>{
     try{
         if(req.role=="OWNER"){
-            return res.status(422).json({
+            return res.status(403).json({
                 message : 'unauthorized request'
             })
         }

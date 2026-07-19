@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 const jwtSecret=process.env.JWT_SECRET as string;
 
@@ -23,6 +25,7 @@ export function middleware(req: Request, res: Response, next: NextFunction) {
                 message: "Token missing",
             });
         }
+        // console.log("Authorization Header:", req.headers.authorization);
 
         const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
@@ -31,6 +34,8 @@ export function middleware(req: Request, res: Response, next: NextFunction) {
 
         next();
     } catch (err) {
+        // console.log(jwtSecret);
+        // console.log(err);
         return res.status(401).json({
             message: "Invalid or expired token",
         });

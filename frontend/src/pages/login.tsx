@@ -33,8 +33,6 @@ export function Login(){
             return;
         }
         else if(!hasUppercase(trimmedPassword) || !hasSpecial(trimmedPassword)){
-            if(!hasSpecial(trimmedPassword)) console.log("special")
-            if(!hasUppercase(trimmedPassword)) console.log("upper");
             setError("Password must contain at least one UpperCase letter and one special character")
             return;
         }
@@ -45,37 +43,50 @@ export function Login(){
 
         setError("");
 
-        const response = await api.post("/login",{
-            email,
-            password
-        });
+        try {
+            const response = await api.post("/login", {
+                email,
+                password
+            });
 
-        if(response.status == 403){
-            alert('User not found');
-            return;
-        }
-        else if(response.status == 500){
-            alert('Internal Server Error');
-            return;
-        }
-        else if(response.status == 401){
-            alert('Wrong Credentials')
-            return;
+            alert("User Signed Succeddfully");
+
+            const token = response.data.token;
+            const role = response.data.role;
+            const userId = response.data.userId;
+            const address =  response.data.address;
+
+
+            Cookies.set("token", token);
+            Cookies.set("role", role);
+            Cookies.set("email", trimmedEmail);
+            Cookies.set("address", address);
+            Cookies.set("userId", userId);
+
+            if(role=='USER' || role=='ADMIN'){
+                navigate('/stores')
+            }
+            else {
+                navigate('/ratings')
+            }
+
+        } catch (err: any) {
+
+            if (err.response?.status === 401) {
+                alert("Wrong Credentials");
+            }
+            else if (err.response?.status === 403) {
+                alert("User not found");
+            }
+            else if (err.response?.status === 500) {
+                alert("Internal Server Error");
+            }
+            else {
+                alert("Something went wrong");
+            }
         }
 
-        const token = response.data.token;
-        const role = response.data.role;
-
-        Cookies.set("token", token, {
-            expires: 7,
-        });
-
-        if(role=='USER' || role=='ADMIN'){
-            navigate('/stores')
-        }
-        else {
-            navigate('/ratings')
-        }
+        
 
     }
 
@@ -83,7 +94,7 @@ export function Login(){
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8">
         <h1 className="text-3xl font-bold text-center mb-6">
-            Create Account
+            Welcome Back!
         </h1>
 
         {error && (

@@ -49,5 +49,5 @@ model Rating{
   storeId     String 
 
   store       Store @relation(fields: [storeId], references: [id])
-  user     User  @relation(fields: [userId], references: [id])
+  user        User  @relation(fields: [userId], references: [id])
 }
