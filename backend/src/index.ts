@@ -231,6 +231,40 @@ app.post('/create-store', middleware, async (req, res)=>{
     }
 })
 
+// writing an endpoint helps to retrieve all the owner Ids so that admin can select it
+app.get("/available-owners", middleware, async (req, res) => {
+    try {
+
+        if (req.role !== "ADMIN") {
+            return res.status(403).json({
+                message: "Unauthorized request"
+            });
+        }
+
+        const owners = await prisma.user.findMany({
+            where: {
+                role: "OWNER",
+                store: null
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true
+            }
+        });
+
+        return res.status(200).json({
+            owners
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            message: "Internal Server Error"
+        });
+    }
+}); 
+
 app.get('/all-users', middleware, async (req, res) =>{
     try {
         if(req.role!="ADMIN"){
@@ -547,15 +581,9 @@ app.post('/update-password', middleware, async (req, res) =>{
     }
 })
 
-// both ADMIN and simple USER can view list of all the stores
+// all users can view list of all the stores
 app.get('/all-stores', middleware, async (req, res) =>{
     try{
-        if(req.role=="OWNER"){
-            return res.status(403).json({
-                message : 'unauthorized request'
-            })
-        }
-
 
         const stores = await prisma.store.findMany({
             include : {
@@ -593,7 +621,6 @@ app.get('/all-stores', middleware, async (req, res) =>{
         });
     }
 })
-
 
 
 app.listen(8080,()=>{

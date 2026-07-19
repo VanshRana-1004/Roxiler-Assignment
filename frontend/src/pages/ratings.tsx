@@ -118,6 +118,10 @@ export function Ratings(){
                     Ratings Dashboard
                 </h1>
                 <div className="w-auto flex gap-3 ">
+                    <button onClick={()=>{navigate('/stores')}} className="px-5 h-10 bg-gray-600 text-white rounded-md">Stores</button>
+                    {role=='ADMIN' && 
+                        <button onClick={()=>{navigate('/users')}} className="px-5 h-10 bg-gray-600 text-white rounded-md">Users</button>
+                    }
                     <button onClick={() => setPassBox(true)} className="px-5 h-10 bg-blue-600 text-white rounded-md">Change Password</button>
                     <button onClick={()=>{logout()}} className="px-5 h-10 bg-red-600 text-white rounded-md">Logout</button>
                 </div>

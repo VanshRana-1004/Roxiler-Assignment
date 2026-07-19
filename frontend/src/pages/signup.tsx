@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate} from "react-router-dom";
+import Cookies from "js-cookie";
 
 import { api } from "../api";
 
@@ -13,6 +14,19 @@ export function Signup(){
     const [ password, setPassword ]=useState<string>("");
 
     const [ error, setError ]=useState<string>("");
+    
+    useEffect(()=>{
+        const token=Cookies.get('token');
+        const role=Cookies.get('role')
+        if(token!=undefined){
+            if(role=='OWNER'){
+                navigate('/ratings')
+            }
+            else{
+                navigate('/stores')
+            }
+        }
+    },[])
 
     function hasUppercase(pass : string){
         return /[A-Z]/.test(pass);
@@ -64,7 +78,7 @@ export function Signup(){
 
         setError("");
         try{
-            const response = await api.post("/signup",{
+            await api.post("/signup",{
                 name,
                 email,
                 address,

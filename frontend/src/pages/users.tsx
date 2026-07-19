@@ -15,8 +15,8 @@ export function Users(){
     const [ createUserBox, setCreateUserBox] = useState<boolean>(false);
 
     const [ users, setUsers] = useState<any[]>([]);
-    const [emailFilter, setEmailFilter] = useState("");
-    const [idFilter, setIdFilter] = useState(""); 
+    const [emailFilter, setEmailFilter] = useState<string>("");
+    const [idFilter, setIdFilter] = useState<string>(""); 
 
     function logout(){
         Cookies.remove('token')
@@ -42,15 +42,14 @@ export function Users(){
 
         async function getUsers(){
 
-            let result;
 
-            if(userRole == 'USER'){
+            if(role == 'USER'){
                 // user can't see other user
                 alert("User Can't access other users info");
                 logout();
                 return;
             }
-            else if(userRole == 'OWNER'){
+            else if(role == 'OWNER'){
                 // store owner can't see all the users just their store ratings
                 alert("Owner can't access Users info")
                 logout();
@@ -98,6 +97,8 @@ export function Users(){
                     Users Dashboard
                 </h1>
                 <div className="w-auto flex gap-3 ">
+                    <button onClick={()=>navigate('/stores')} className="bg-gray-600 text-white px-5 rounded-md h-10">Stores</button>
+                    <button onClick={()=>navigate('/ratings')} className="bg-gray-600 text-white px-5 rounded-md h-10">Ratings</button>
                     <button onClick={()=>{setPassBox(false),setCreateUserBox(true)}} className="bg-blue-600 text-white px-5 rounded-md h-10">Create User</button>
                     <button onClick={() => {setCreateUserBox(false),setPassBox(true)}} className="px-5 h-10 bg-blue-600 text-white rounded-md">Change Password</button>
                     <button onClick={()=>{logout()}} className="px-5 h-10 bg-red-600 text-white rounded-md">Logout</button>
