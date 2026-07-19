@@ -14,20 +14,25 @@ declare global {
   }
   
 
-export function middleware(req : Request,res : Response,next : NextFunction){
-    const token=req.headers['authorization'] ?? "";
-    const decoded=jwt.verify(token,jwtSecret as string) ;
-    if(typeof decoded == "string"){
-        return;
-    }
-    if(decoded.userId){
-        req.userId=decoded.userId
-        req.role=decoded.role
+export function middleware(req: Request, res: Response, next: NextFunction) {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({
+                message: "Token missing",
+            });
+        }
+
+        const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+
+        req.userId = decoded.userId;
+        req.role = decoded.role;
+
         next();
+    } catch (err) {
+        return res.status(401).json({
+            message: "Invalid or expired token",
+        });
     }
-    else{
-        res.status(403).json({
-            message : "unauthorized"
-        })
-    }
-}   
+}
