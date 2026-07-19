@@ -27,6 +27,10 @@ app.post("/signup", async (req, res) => {
     try {
         
         const { name, email, password, address } = req.body;
+        console.log(name);
+        console.log(email);
+        console.log(password);
+        console.log(address);
 
         const hashedPassword = await bcrypt.hash(password, 5);
 
@@ -69,9 +73,8 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
 
     try{
-        
         const { email, password } = req.body;
-        const user = await prisma.user.findFirst({
+        const user = await prisma.user.findUnique({
             where:{
                 email
             }
@@ -98,6 +101,7 @@ app.post("/login", async (req, res) => {
         },jwtSecret as string);
 
         return res.status(201).json({
+            role,
             token : token,
             message : "Signed in successfully."
         })
