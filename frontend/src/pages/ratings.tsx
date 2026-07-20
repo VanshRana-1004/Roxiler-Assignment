@@ -15,6 +15,11 @@ export function Ratings(){
     const [ storeFilter, setStoreFilter] = useState<string>("");
     const [ PassBox,setPassBox] = useState<boolean>(false);
 
+    const [ratingBox, setRatingBox] = useState(false);
+    const [selectedStore, setSelectedStore] = useState<any>(null);
+    const [rating, setRating] = useState(1);
+    const [ refresh, setRefresh ] = useState<boolean>(false);
+
     function logout(){
         Cookies.remove('token')
         Cookies.remove('address')
@@ -80,28 +85,34 @@ export function Ratings(){
         }
         
         getRatings();
-    },[]);
+    },[refresh]);
 
-    async function updateRating(storeId: string) {
+    async function submitRating() {
+        try {
+            const token = Cookies.get("token");
 
-        const rating = Number(prompt("Enter rating (1-5)"));
-
-        if (!rating || rating < 1 || rating > 5) return;
-
-        await api.post(
-            "/rate-store",
-            {
-                storeId,
-                rating
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${Cookies.get("token")}`
+            await api.post(
+                "/rate-store",
+                {
+                    storeId: selectedStore.id,
+                    rating,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
-            }
-        );
+            );
 
-        window.location.reload();
+            alert("Rating submitted");
+
+            setRatingBox(false);
+            setSelectedStore(null);
+            setRating(1);
+            setRefresh(prev=>!prev);
+        } catch (e: any) {
+            alert(e.response?.data?.message || "Internal Server Error");
+        }
     }
 
     return (
@@ -112,6 +123,45 @@ export function Ratings(){
                     <ChangePasswordBox onClose={()=>setPassBox(false)}/>
                 </div>
             }
+            {ratingBox && selectedStore && (
+                <div className="fixed inset-0 bg-black/30 flex justify-center items-center">
+                    <div className="bg-white rounded-lg p-6 w-96">
+
+                        <h2 className="text-xl font-bold mb-4">
+                            Rate {selectedStore.name}
+                        </h2>
+
+                        <select
+                            value={rating}
+                            onChange={(e) => setRating(Number(e.target.value))}
+                            className="border w-full p-2 rounded mb-4"
+                        >
+                            {[1,2,3,4,5].map((r)=>(
+                                <option key={r} value={r}>
+                                    {r}
+                                </option>
+                            ))}
+                        </select>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setRatingBox(false)}
+                                className="px-4 py-2 bg-gray-500 text-white rounded"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={submitRating}
+                                className="px-4 py-2 bg-blue-600 text-white rounded"
+                            >
+                                Submit
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
             <div className="w-full flex justify-between ">
                 <h1 className="text-3xl font-bold mb-8">
@@ -180,7 +230,13 @@ export function Ratings(){
                                     <td className="text-center">
 
                                         <button
-                                            onClick={() => updateRating(r.store.id)}
+                                            onClick={() => {
+                                                if(role=='USER'){
+                                                    setSelectedStore(r.store);
+                                                    setRatingBox(true);
+                                                }
+                                            }
+                                            }
                                             className="bg-blue-500 text-white px-3 py-1 rounded"
                                         >
                                             Update
