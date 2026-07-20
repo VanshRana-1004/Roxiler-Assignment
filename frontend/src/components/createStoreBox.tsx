@@ -87,8 +87,7 @@ export function CreateStoreBox({ onClose }: Props) {
             );
 
             alert("Store created successfully.");
-
-            window.location.reload();
+            onClose();
 
         } catch (err: any) {
 

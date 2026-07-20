@@ -60,7 +60,7 @@ export function Stores(){
         }
 
         getStores();
-    },[]);
+    },[createStoreBox]);
 
     async function submitRating() {
         try {

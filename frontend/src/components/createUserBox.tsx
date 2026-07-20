@@ -83,7 +83,7 @@ export function CreateUserBox({ onClose }: Props) {
                 Share these credentials with the user.`
             );
 
-            window.location.reload();
+            onClose();
 
         } catch (err: any) {
 

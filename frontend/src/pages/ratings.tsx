@@ -294,9 +294,9 @@ export function Ratings(){
                         <thead className="bg-gray-200">
                             <tr>
 
-                                <th>User</th>
-                                <th>Store</th>
-                                <th>Rating</th>
+                                <th className="w-1/4 p-3 text-start">User</th>
+                                <th className="w-1/4 text-start">Store</th>
+                                <th className="w-1/4 text-start">Rating</th>
 
                             </tr>
                         </thead>
@@ -310,21 +310,21 @@ export function Ratings(){
 
                                 <tr key={r.id} className="border-b">
 
-                                    <td className="p-3">
+                                    <td className="w-1/4 p-3 text-start">
                                         <div>{r.user.name}</div>
                                         <div className="text-xs text-gray-500">
                                             {r.user.email}
                                         </div>
                                     </td>
 
-                                    <td>
+                                    <td className="w-1/4 text-start">
                                         <div>{r.store.name}</div>
                                         <div className="text-xs text-gray-500">
                                             {r.store.email}
                                         </div>
                                     </td>
 
-                                    <td className="text-center">
+                                    <td className="w-1/4 text-start">
                                         {r.rating}
                                     </td>
 
