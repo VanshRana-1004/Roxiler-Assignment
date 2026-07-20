@@ -18,6 +18,10 @@ export function Stores(){
     const [ emailFilter, setEmailFilter] = useState<string>("");
     const [ idFilter, setIdFilter]= useState<string>("");
     
+    const [ratingBox, setRatingBox] = useState(false);
+    const [selectedStore, setSelectedStore] = useState<any>(null);
+    const [rating, setRating] = useState(1);
+    
     function logout(){
         Cookies.remove('token')
         Cookies.remove('address')
@@ -57,6 +61,40 @@ export function Stores(){
 
         getStores();
     },[]);
+
+    async function submitRating() {
+        try {
+            const token = Cookies.get("token");
+
+            await api.post(
+                "/rate-store",
+                {
+                    storeId: selectedStore.id,
+                    rating,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            alert("Rating submitted");
+
+            setRatingBox(false);
+
+            // Refresh stores to get updated average
+            const result = await api.get("/all-stores", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setStores(result.data.stores);
+        } catch (e: any) {
+            alert(e.response?.data?.message || "Internal Server Error");
+        }
+    }
         
     return <div className="min-h-screen bg-gray-100 p-6">
 
@@ -72,13 +110,53 @@ export function Stores(){
                 />
             </div>
         }
+        {ratingBox && selectedStore && (
+            <div className="fixed inset-0 bg-black/30 flex justify-center items-center">
+                <div className="bg-white rounded-lg p-6 w-96">
+
+                    <h2 className="text-xl font-bold mb-4">
+                        Rate {selectedStore.name}
+                    </h2>
+
+                    <select
+                        value={rating}
+                        onChange={(e) => setRating(Number(e.target.value))}
+                        className="border w-full p-2 rounded mb-4"
+                    >
+                        {[1,2,3,4,5].map((r)=>(
+                            <option key={r} value={r}>
+                                {r}
+                            </option>
+                        ))}
+                    </select>
+
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => setRatingBox(false)}
+                            className="px-4 py-2 bg-gray-500 text-white rounded"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            onClick={submitRating}
+                            className="px-4 py-2 bg-blue-600 text-white rounded"
+                        >
+                            Submit
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        )}
+        
 
         <div className="w-full flex justify-between ">
             <h1 className="text-3xl font-bold mb-8">
                 Stores Dashboard
             </h1>
             <div className="w-auto flex gap-3 ">
-                <button onClick={()=>navigate('/users')} className="bg-gray-600 text-white px-5 rounded-md h-10">Users</button>
+                {role=='ADMIN' && <button onClick={()=>navigate('/users')} className="bg-gray-600 text-white px-5 rounded-md h-10">Users</button>}
                 <button onClick={()=>navigate('/ratings')} className="bg-gray-600 text-white px-5 rounded-md h-10">Ratings</button>
                 {role=='ADMIN' && <button onClick={()=>{setPassBox(false),setCreateStoreBox(true)}} className="bg-blue-600 text-white px-5 rounded-md h-10">Create Store</button>}
                 <button onClick={() => {setCreateStoreBox(false),setPassBox(true)}} className="px-5 h-10 bg-blue-600 text-white rounded-md">Change Password</button>
@@ -125,7 +203,14 @@ export function Stores(){
                         )
                         .map((store) => (
 
-                            <tr key={store.id} className="border-b">
+                            <tr key={store.id} className={`border-b ${role === "USER" ? "cursor-pointer hover:bg-gray-100" : ""}`}
+                                onClick={() => {
+                                    if (role === "USER") {
+                                        setSelectedStore(store);
+                                        setRatingBox(true);
+                                    }
+                                }}
+                            >
 
                                 <td className="p-3">
 

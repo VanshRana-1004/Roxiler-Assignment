@@ -49,7 +49,7 @@ export function Login(){
                 password
             });
 
-            alert("User Signed Succeddfully");
+            alert("User Signed Successfully");
 
             const token = response.data.token;
             const role = response.data.role;
