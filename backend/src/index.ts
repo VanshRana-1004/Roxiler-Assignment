@@ -7,13 +7,14 @@ import { PrismaClient } from "@prisma/client";
 import { generatePassword } from "./utils/password.js";
 import dotenv from "dotenv";
 dotenv.config();
+const CLIENT_URL=process.env.CLIENT_URL as string || "http://localhost:5173";
 
 const jwtSecret=process.env.JWT_SECRET as string;
 
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin : "http://localhost:5173",
+    origin : CLIENT_URL,
     credentials : true
 }));
 
