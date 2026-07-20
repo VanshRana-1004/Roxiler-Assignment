@@ -54,7 +54,7 @@ app.post("/signup", async (req, res) => {
                 email,
                 password: hashedPassword,
                 address,
-                role: "ADMIN" 
+                role: "USER" 
             }
         });
 
