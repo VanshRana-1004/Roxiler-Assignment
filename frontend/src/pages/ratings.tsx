@@ -252,14 +252,14 @@ export function Ratings(){
                 )}
 
                 {role === "OWNER" && (
-                    <table className="min-w-full">
+                    <table className="min-w-full table-fixed ">
 
                         <thead className="bg-gray-200">
                             <tr>
-                                <th className="p-3">Name</th>
-                                <th>Email</th>
-                                <th>Address</th>
-                                <th>Rating</th>
+                                <th className="w-1/4 p-3 text-start">Name</th>
+                                <th className="w-1/4  text-start">Email</th>
+                                <th className="w-1/4  text-start">Address</th>
+                                <th className="w-1/4  text-start">Rating</th>
                             </tr>
                         </thead>
 
@@ -267,15 +267,15 @@ export function Ratings(){
 
                             {ratings.map((r) => (
 
-                                <tr key={r.user.id} className="border-b">
+                                <tr key={r.user.id} className="border-b ">
 
-                                    <td className="p-3">{r.user.name}</td>
+                                    <td className="p-3 w-1/4 text-start">{r.user.name}</td>
 
-                                    <td>{r.user.email}</td>
+                                    <td className="w-1/4 text-start">{r.user.email}</td>
 
-                                    <td>{r.user.address}</td>
+                                    <td className="w-1/4 text-start">{r.user.address}</td>
 
-                                    <td className="text-center">
+                                    <td className="w-1/4 text-start">
                                         {r.rating}
                                     </td>
 
