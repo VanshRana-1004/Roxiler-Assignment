@@ -1,4 +1,4 @@
-# live : https://roxiler-assignment-sandy.vercel.app/
+# live : https://roxiler-assignment-sandy.vercel.app/ (Not responsive on small screens)
 - Note : added .env.example file for guidance
   
 # Frontend 
